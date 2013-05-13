@@ -1,7 +1,7 @@
 {
     "name": "flowpack/behat",
     "type": "typo3-flow-package",
-    "description": "",
+    "description": "Behat support package for TYPO3 Flow",
     "require": {
         "typo3/flow": "*"
     },
