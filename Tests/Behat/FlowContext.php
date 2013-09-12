@@ -2,6 +2,7 @@
 namespace Flowpack\Behat\Tests\Behat;
 
 use Behat\Behat\Context\BehatContext;
+use Behat\Behat\Event\ScenarioEvent;
 use TYPO3\Flow\Core\Booting\Scripts,
 	TYPO3\Flow\Core\Bootstrap,
 	TYPO3\Flow\Configuration\ConfigurationManager;
@@ -24,9 +25,9 @@ class FlowContext extends BehatContext {
 	protected $objectManager;
 
 	/**
-	 * @var array
+	 * @var \Doctrine\DBAL\Schema\Schema
 	 */
-	static protected $createSchemaSql;
+	protected static $databaseSchema;
 
 	/**
 	 * @var string
@@ -54,7 +55,7 @@ class FlowContext extends BehatContext {
 			// The new classloader needs warnings converted to exceptions
 		if (!defined('BEHAT_ERROR_REPORTING')) {
 			define('BEHAT_ERROR_REPORTING', E_ALL);
-			// Load ErrorException class, since it will be used in the Behat error handler
+				// Load ErrorException class, since it will be used in the Behat error handler
 			class_exists('Behat\Behat\Exception\ErrorException');
 		}
 		$bootstrap = new Bootstrap('Testing/Behat');
@@ -67,12 +68,12 @@ class FlowContext extends BehatContext {
 	}
 
 	/**
-     * @When /^I run the command "([^"]*)"$/
-     */
-    public function iRunTheCommand($command) {
+	 * @When /^I run the command "([^"]*)"$/
+	 */
+	public function iRunTheCommand($command) {
 		$this->lastCommandOutput = NULL;
 
-        $request = $this->objectManager->get('TYPO3\Flow\Cli\RequestBuilder')->build($command);
+		$request = $this->objectManager->get('TYPO3\Flow\Cli\RequestBuilder')->build($command);
 		$response = new \TYPO3\Flow\Cli\Response();
 
 		$dispatcher = $this->objectManager->get('TYPO3\Flow\Mvc\Dispatcher');
@@ -81,47 +82,52 @@ class FlowContext extends BehatContext {
 		$this->lastCommandOutput = $response->getContent();
 
 		$this->persistAll();
-    }
+	}
 
 	/**
-     * @Then /^I should see the command output "([^"]*)"$/
-     */
-    public function iShouldGetTheOutput($line) {
+	 * @Then /^I should see the command output "([^"]*)"$/
+	 */
+	public function iShouldSeeTheCommandOutput($line) {
 		\PHPUnit_Framework_Assert::assertContains($line, explode(PHP_EOL, $this->lastCommandOutput));
-    }
+	}
 
 	/**
 	 * @BeforeScenario @fixtures
 	 *
-	 * @param \Behat\Behat\Event\EventInterface $event
+	 * @param \Behat\Behat\Event\ScenarioEvent $event
 	 */
-	public function resetTestFixtures($event) {
-		$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->tearDown();
-
+	public function resetTestFixtures(ScenarioEvent $event) {
 		/** @var \Doctrine\ORM\EntityManager $em */
 		$em = $this->objectManager->get('Doctrine\Common\Persistence\ObjectManager');
-		if (self::$createSchemaSql !== NULL) {
+		$em->clear();
+
+		if (self::$databaseSchema !== NULL) {
 			$conn = $em->getConnection();
-			foreach (self::$createSchemaSql as $sql) {
-				$conn->executeQuery($sql);
+
+			$tables = self::$databaseSchema->getTables();
+			$sql = 'SET FOREIGN_KEY_CHECKS=0;';
+			foreach ($tables as $table) {
+				$sql .= 'TRUNCATE `' . $table->getName() . '`;';
 			}
+			$sql .= 'SET FOREIGN_KEY_CHECKS=1;';
+
+			$conn->executeQuery($sql);
 		} else {
+				// Do an initial teardown to drop the schema cleanly
+			$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->tearDown();
+
 			/** @var \TYPO3\Flow\Persistence\Doctrine\Service $doctrineService */
 			$doctrineService = $this->objectManager->get('TYPO3\Flow\Persistence\Doctrine\Service');
 			$doctrineService->executeMigrations();
 
 			$schema = $em->getConnection()->getSchemaManager()->createSchema();
-			self::$createSchemaSql = $schema->toSql($em->getConnection()->getDatabasePlatform());
+			self::$databaseSchema = $schema;
 
-			// FIXME Check if this is needed at all!
+				// FIXME Check if this is needed at all!
 			$proxyFactory = $em->getProxyFactory();
 			$proxyFactory->generateProxyClasses($em->getMetadataFactory()->getAllMetadata());
 		}
 
-			// Reset roles from policy after resetting database
-		$this->objectManager->get('TYPO3\Flow\Security\Policy\PolicyService')->reset();
-
-		$this->resetRoleRepository();
 		$this->resetFactories();
 	}
 
@@ -137,15 +143,25 @@ class FlowContext extends BehatContext {
 		$reflectionService = $this->objectManager->get('TYPO3\Flow\Reflection\ReflectionService');
 		$fixtureFactoryClassNames = $reflectionService->getAllSubClassNamesForClass('Flowpack\Behat\Tests\Functional\Fixture\FixtureFactory');
 		foreach ($fixtureFactoryClassNames as $fixtureFactoyClassName) {
-			$factory = $this->objectManager->get($fixtureFactoyClassName);
-			$factory->reset();
+			if (!$reflectionService->isClassAbstract($fixtureFactoyClassName)) {
+				$factory = $this->objectManager->get($fixtureFactoyClassName);
+				$factory->reset();
+			}
 		}
+
+		$this->resetRolesAndPolicyService();
 	}
 
 	/**
+	 * Reset policy service and role repository
+	 *
+	 * This is needed to remove cached role entities after resetting the database.
+	 *
 	 * @return void
 	 */
-	protected function resetRoleRepository() {
+	protected function resetRolesAndPolicyService() {
+		$this->objectManager->get('TYPO3\Flow\Security\Policy\PolicyService')->reset();
+
 		$roleRepository = $this->objectManager->get('TYPO3\Flow\Security\Policy\RoleRepository');
 		\TYPO3\Flow\Reflection\ObjectAccess::setProperty($roleRepository, 'newRoles', array(), TRUE);
 	}
@@ -158,7 +174,6 @@ class FlowContext extends BehatContext {
 		$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->clearState();
 
 		$this->resetFactories();
-		$this->resetRoleRepository();
 	}
 
 	/**
@@ -180,8 +195,24 @@ class FlowContext extends BehatContext {
 	 *
 	 * @param string $pageName
 	 * @return string
+	 * @deprecated Use resolvePageUri
 	 */
 	public function resolvePath($pageName) {
+		return $this->resolvePageUri($pageName);
+	}
+
+	/**
+	 * Resolves a URI for the given page name
+	 *
+	 * If a Flow route with a name equal to $pageName exists it will be resolved.
+	 * An absolute path will be used as is for compatibility with the default MinkContext.
+	 *
+	 * @param string $pageName
+	 * @param array $arguments
+	 * @return string
+	 * @throws \InvalidArgumentException
+	 */
+	public function resolvePageUri($pageName, array $arguments = NULL) {
 		$uri = NULL;
 		if (strpos($pageName, '/') === 0) {
 			$uri = $pageName;
@@ -191,8 +222,11 @@ class FlowContext extends BehatContext {
 
 			/** @var \TYPO3\Flow\Mvc\Routing\Route $route */
 			foreach ($router->getRoutes() as $route) {
-				if (preg_match('/::\s*' . preg_quote($pageName, '/') . '$/i', $route->getName())) {
+				if (preg_match('/::\s*' . preg_quote($pageName, '/') . '$/', $route->getName())) {
 					$routeValues = $route->getDefaults();
+					if (is_array($arguments)) {
+						$routeValues = array_merge($routeValues, $arguments);
+					}
 					if ($route->resolves($routeValues)) {
 						$uri = $route->getMatchingUri();
 						break;
@@ -200,8 +234,10 @@ class FlowContext extends BehatContext {
 				}
 			}
 			if ($uri === NULL) {
-				\PHPUnit_Framework_Assert::fail('Could not resolve a route for name "' . $pageName . '"');
-				return $uri;
+				throw new \InvalidArgumentException('Could not resolve a route for name "' . $pageName . '"');
+			}
+			if (strpos($uri, 'http') !== 0 && strpos($uri, '/') !== 0) {
+				$uri = '/' . $uri;
 			}
 			return $uri;
 		}
@@ -220,7 +256,6 @@ class FlowContext extends BehatContext {
 	public function getLastCommandOutput() {
 		return $this->lastCommandOutput;
 	}
-
 }
 
 ?>

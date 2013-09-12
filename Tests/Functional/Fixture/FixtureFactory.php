@@ -6,7 +6,7 @@ use TYPO3\Flow\Annotations as Flow;
 /**
  * Base test fixture factory
  */
-class FixtureFactory {
+abstract class FixtureFactory {
 
 	/**
 	 * @var string
