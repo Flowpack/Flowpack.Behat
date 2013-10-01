@@ -2,7 +2,6 @@
 namespace Flowpack\Behat\Tests\Behat;
 
 use Behat\Behat\Context\BehatContext;
-use Behat\Behat\Event\ScenarioEvent;
 use TYPO3\Flow\Core\Booting\Scripts,
 	TYPO3\Flow\Core\Bootstrap,
 	TYPO3\Flow\Configuration\ConfigurationManager;
@@ -93,10 +92,8 @@ class FlowContext extends BehatContext {
 
 	/**
 	 * @BeforeScenario @fixtures
-	 *
-	 * @param \Behat\Behat\Event\ScenarioEvent $event
 	 */
-	public function resetTestFixtures(ScenarioEvent $event) {
+	public function resetTestFixtures() {
 		/** @var \Doctrine\ORM\EntityManager $em */
 		$em = $this->objectManager->get('Doctrine\Common\Persistence\ObjectManager');
 		$em->clear();
