@@ -2,6 +2,7 @@
     "name": "flowpack/behat",
     "type": "typo3-flow-package",
     "description": "Behat support package for TYPO3 Flow",
+    "license": "LGPL-3.0+",
     "require": {
         "typo3/flow": "*"
     },
