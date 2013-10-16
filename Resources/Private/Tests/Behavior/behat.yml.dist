@@ -15,7 +15,6 @@ default:
 
       # Project base URL
       #
-      # Use BEHAT_PARAMS="extensions[Behat\MinkExtension\Extension][base_url]=http://neos.local/" for configuration during
-      # runtime.
+      # Use BEHAT_PARAMS="extensions[Behat\MinkExtension\Extension][base_url]=http://example.local/" for configuration during runtime.
       #
-      # base_url: http://localhost/
+      base_url: http://localhost/

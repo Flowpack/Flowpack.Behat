@@ -15,6 +15,7 @@ use TYPO3\Flow\Utility\Files;
  * @Flow\Scope("singleton")
  */
 class BehatCommandController extends \TYPO3\Flow\Cli\CommandController {
+
 	/**
 	 * @var \TYPO3\Flow\Package\PackageManagerInterface
 	 * @Flow\Inject
@@ -40,7 +41,7 @@ class BehatCommandController extends \TYPO3\Flow\Cli\CommandController {
 		if (!is_file($behatBinaryPath)) {
 			system('cd ' . $behatBuildPath . ' && composer install');
 			$this->outputLine();
-			$this->outputLine('Installed Behat to: bin/behat. You can execute it through: "bin/behat -c Packages/Application/TYPO3.Neos/Tests/Behavior/behat.yml"');
+			$this->outputLine('Installed Behat to bin/behat');
 		}
 
 		$seleniumBinaryPath = FLOW_PATH_ROOT . 'bin/selenium-server.jar';
@@ -48,18 +49,18 @@ class BehatCommandController extends \TYPO3\Flow\Cli\CommandController {
 			$seleniumVersion = 'selenium-server-standalone-2.35.0.jar';
 			system('wget --quiet http://selenium.googlecode.com/files/' . $seleniumVersion);
 			rename(FLOW_PATH_ROOT . $seleniumVersion, FLOW_PATH_ROOT . 'bin/selenium-server.jar');
-			$this->outputLine('Downloaded Selenium to bin/selenium-server.jar. you can execute it through: "java -jar selenium-server.jar"');
+			$this->outputLine('Downloaded Selenium to bin/selenium-server.jar');
+			$this->outputLine('You can execute it through: "java -jar selenium-server.jar"');
 		}
 	}
 
 	/**
-	 * This command will help you to kickstart the testing in a package
+	 * This command will help you to kickstart Behat testing for a package
 	 *
-	 * It will add a folder Behavior in your Package with the default
-	 * behat setup
+	 * It will add a folder Tests/Behavior in your package with a default Behat setup.
 	 *
-	 * @param string $packageName
-	 * @param string $host
+	 * @param string $packageName The package key
+	 * @param string $host The base URL for the Flow application (e.g. http://example.local/)
 	 * @return void
 	 */
 	public function kickstartCommand($packageName, $host) {
@@ -81,5 +82,3 @@ class BehatCommandController extends \TYPO3\Flow\Cli\CommandController {
 	}
 
 }
-
-?>

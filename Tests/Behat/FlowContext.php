@@ -1,6 +1,11 @@
 <?php
 namespace Flowpack\Behat\Tests\Behat;
 
+/*                                                                        *
+ * This script belongs to the TYPO3 Flow package "Flowpack.Behat".        *
+ *                                                                        *
+ *                                                                        */
+
 use Behat\Behat\Context\BehatContext;
 use TYPO3\Flow\Core\Booting\Scripts,
 	TYPO3\Flow\Core\Bootstrap,
@@ -254,5 +259,3 @@ class FlowContext extends BehatContext {
 		return $this->lastCommandOutput;
 	}
 }
-
-?>

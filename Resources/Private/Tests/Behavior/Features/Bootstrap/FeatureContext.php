@@ -27,11 +27,10 @@ class FeatureContext extends MinkContext {
 		$this->objectManager = $this->getSubcontext('flow')->getObjectManager();
 	}
 
-    /**
-     * @Then /^I should see some output from behat$/
-     */
-    public function iShouldSeeSomeOutputFromBehat() {
-        return TRUE;
-    }
+	/**
+	* @Then /^I should see some output from behat$/
+	*/
+	public function iShouldSeeSomeOutputFromBehat() {
+		return TRUE;
+	}
 }
-?>
