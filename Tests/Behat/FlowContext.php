@@ -12,9 +12,10 @@ namespace Flowpack\Behat\Tests\Behat;
  *                                                                        */
 
 use Behat\Behat\Context\BehatContext;
-use TYPO3\Flow\Core\Booting\Scripts,
-	TYPO3\Flow\Core\Bootstrap,
-	TYPO3\Flow\Configuration\ConfigurationManager;
+use Behat\Behat\Event\ScenarioEvent;
+use TYPO3\Flow\Core\Booting\Scripts;
+use TYPO3\Flow\Core\Bootstrap;
+use TYPO3\Flow\Configuration\ConfigurationManager;
 
 class FlowContext extends BehatContext {
 
@@ -103,22 +104,32 @@ class FlowContext extends BehatContext {
 	/**
 	 * @BeforeScenario @fixtures
 	 */
-	public function resetTestFixtures() {
-		/** @var \Doctrine\ORM\EntityManager $em */
-		$em = $this->objectManager->get('Doctrine\Common\Persistence\ObjectManager');
-		$em->clear();
+	public function resetTestFixtures(ScenarioEvent $event) {
+		/** @var \Doctrine\ORM\EntityManager $entityManager */
+		$entityManager = $this->objectManager->get('Doctrine\Common\Persistence\ObjectManager');
+		$entityManager->clear();
 
 		if (self::$databaseSchema !== NULL) {
-			$conn = $em->getConnection();
+			$connection = $entityManager->getConnection();
 
 			$tables = self::$databaseSchema->getTables();
-			$sql = 'SET FOREIGN_KEY_CHECKS=0;';
-			foreach ($tables as $table) {
-				$sql .= 'TRUNCATE `' . $table->getName() . '`;';
+			switch ($connection->getDatabasePlatform()->getName()) {
+				case 'mysql':
+					$sql = 'SET FOREIGN_KEY_CHECKS=0;';
+					foreach ($tables as $table) {
+						$sql .= 'TRUNCATE `' . $table->getName() . '`;';
+					}
+					$sql .= 'SET FOREIGN_KEY_CHECKS=1;';
+					$connection->executeQuery($sql);
+					break;
+				case 'postgresql':
+				default:
+					foreach ($tables as $table) {
+						$sql = 'TRUNCATE ' . $table->getName() . ' CASCADE;';
+						$connection->executeQuery($sql);
+					}
+					break;
 			}
-			$sql .= 'SET FOREIGN_KEY_CHECKS=1;';
-
-			$conn->executeQuery($sql);
 		} else {
 				// Do an initial teardown to drop the schema cleanly
 			$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->tearDown();
@@ -127,12 +138,12 @@ class FlowContext extends BehatContext {
 			$doctrineService = $this->objectManager->get('TYPO3\Flow\Persistence\Doctrine\Service');
 			$doctrineService->executeMigrations();
 
-			$schema = $em->getConnection()->getSchemaManager()->createSchema();
+			$schema = $entityManager->getConnection()->getSchemaManager()->createSchema();
 			self::$databaseSchema = $schema;
 
 				// FIXME Check if this is needed at all!
-			$proxyFactory = $em->getProxyFactory();
-			$proxyFactory->generateProxyClasses($em->getMetadataFactory()->getAllMetadata());
+			$proxyFactory = $entityManager->getProxyFactory();
+			$proxyFactory->generateProxyClasses($entityManager->getMetadataFactory()->getAllMetadata());
 		}
 
 		$this->resetFactories();
