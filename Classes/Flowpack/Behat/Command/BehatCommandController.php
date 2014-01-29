@@ -51,7 +51,7 @@ class BehatCommandController extends \TYPO3\Flow\Cli\CommandController {
 
 		$seleniumBinaryPath = FLOW_PATH_ROOT . 'bin/selenium-server.jar';
 		if (!is_file($seleniumBinaryPath)) {
-			$seleniumVersion = 'selenium-server-standalone-2.35.0.jar';
+			$seleniumVersion = 'selenium-server-standalone-2.39.0.jar';
 			system('wget --quiet http://selenium.googlecode.com/files/' . $seleniumVersion);
 			rename(FLOW_PATH_ROOT . $seleniumVersion, FLOW_PATH_ROOT . 'bin/selenium-server.jar');
 			$this->outputLine('Downloaded Selenium to bin/selenium-server.jar');
