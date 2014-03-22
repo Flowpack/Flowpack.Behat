@@ -109,33 +109,21 @@ class FlowContext extends BehatContext {
 		$entityManager->clear();
 
 		if (self::$databaseSchema !== NULL) {
-			$connection = $entityManager->getConnection();
-
-			$tables = self::$databaseSchema->getTables();
-			switch ($connection->getDatabasePlatform()->getName()) {
-				case 'mysql':
-					$sql = 'SET FOREIGN_KEY_CHECKS=0;';
-					foreach ($tables as $table) {
-						$sql .= 'TRUNCATE `' . $table->getName() . '`;';
-					}
-					$sql .= 'SET FOREIGN_KEY_CHECKS=1;';
-					$connection->executeQuery($sql);
-					break;
-				case 'postgresql':
-				default:
-					foreach ($tables as $table) {
-						$sql = 'TRUNCATE ' . $table->getName() . ' CASCADE;';
-						$connection->executeQuery($sql);
-					}
-					break;
-			}
+			$this->truncateTables($entityManager);
 		} else {
+			try {
+				/** @var \TYPO3\Flow\Persistence\Doctrine\Service $doctrineService */
+				$doctrineService = $this->objectManager->get('TYPO3\Flow\Persistence\Doctrine\Service');
+				$doctrineService->executeMigrations();
+				$this->truncateTables($entityManager);
+			} catch (\Doctrine\DBAL\DBALException $exception) {
 				// Do an initial teardown to drop the schema cleanly
-			$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->tearDown();
+				$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->tearDown();
 
-			/** @var \TYPO3\Flow\Persistence\Doctrine\Service $doctrineService */
-			$doctrineService = $this->objectManager->get('TYPO3\Flow\Persistence\Doctrine\Service');
-			$doctrineService->executeMigrations();
+				/** @var \TYPO3\Flow\Persistence\Doctrine\Service $doctrineService */
+				$doctrineService = $this->objectManager->get('TYPO3\Flow\Persistence\Doctrine\Service');
+				$doctrineService->executeMigrations();
+			}
 
 			$schema = $entityManager->getConnection()->getSchemaManager()->createSchema();
 			self::$databaseSchema = $schema;
@@ -146,6 +134,35 @@ class FlowContext extends BehatContext {
 		}
 
 		$this->resetFactories();
+	}
+
+	/**
+	 * Truncate all known tables
+	 *
+	 * @param \Doctrine\ORM\EntityManager $entityManager
+	 * @return void
+	 */
+	public function truncateTables($entityManager) {
+		$connection = $entityManager->getConnection();
+
+		$tables = self::$databaseSchema->getTables();
+		switch ($connection->getDatabasePlatform()->getName()) {
+			case 'mysql':
+				$sql = 'SET FOREIGN_KEY_CHECKS=0;';
+				foreach ($tables as $table) {
+					$sql .= 'TRUNCATE `' . $table->getName() . '`;';
+				}
+				$sql .= 'SET FOREIGN_KEY_CHECKS=1;';
+				$connection->executeQuery($sql);
+				break;
+			case 'postgresql':
+			default:
+				foreach ($tables as $table) {
+					$sql = 'TRUNCATE ' . $table->getName() . ' CASCADE;';
+					$connection->executeQuery($sql);
+				}
+				break;
+		}
 	}
 
 	/**
