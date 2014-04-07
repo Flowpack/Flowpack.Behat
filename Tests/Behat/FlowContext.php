@@ -115,7 +115,7 @@ class FlowContext extends BehatContext {
 				/** @var \TYPO3\Flow\Persistence\Doctrine\Service $doctrineService */
 				$doctrineService = $this->objectManager->get('TYPO3\Flow\Persistence\Doctrine\Service');
 				$doctrineService->executeMigrations();
-				$this->truncateTables($entityManager);
+				$needsTruncate = TRUE;
 			} catch (\Doctrine\DBAL\DBALException $exception) {
 				// Do an initial teardown to drop the schema cleanly
 				$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->tearDown();
@@ -123,10 +123,15 @@ class FlowContext extends BehatContext {
 				/** @var \TYPO3\Flow\Persistence\Doctrine\Service $doctrineService */
 				$doctrineService = $this->objectManager->get('TYPO3\Flow\Persistence\Doctrine\Service');
 				$doctrineService->executeMigrations();
+				$needsTruncate = FALSE;
 			}
 
 			$schema = $entityManager->getConnection()->getSchemaManager()->createSchema();
 			self::$databaseSchema = $schema;
+
+			if ($needsTruncate) {
+				$this->truncateTables($entityManager);
+			}
 
 				// FIXME Check if this is needed at all!
 			$proxyFactory = $entityManager->getProxyFactory();
@@ -145,7 +150,9 @@ class FlowContext extends BehatContext {
 	public function truncateTables($entityManager) {
 		$connection = $entityManager->getConnection();
 
-		$tables = self::$databaseSchema->getTables();
+		$tables = array_filter(self::$databaseSchema->getTables(), function($table) {
+			return $table->getName() !== 'flow_doctrine_migrationstatus';
+		});
 		switch ($connection->getDatabasePlatform()->getName()) {
 			case 'mysql':
 				$sql = 'SET FOREIGN_KEY_CHECKS=0;';
