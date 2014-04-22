@@ -77,6 +77,15 @@ class FlowContext extends BehatContext {
 	}
 
 	/**
+	 * @AfterSuite
+	 */
+	public static function shutdownFlow() {
+		if (self::$bootstrap !== NULL) {
+			self::$bootstrap->shutdown('Runtime');
+		}
+	}
+
+	/**
 	 * @When /^I run the command "([^"]*)"$/
 	 */
 	public function iRunTheCommand($command) {
