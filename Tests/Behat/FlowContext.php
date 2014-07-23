@@ -86,7 +86,7 @@ class FlowContext extends BehatContext {
 	}
 
 	/**
-	 * @When /^I run the command "([^"]*)"$/
+	 * @When /^(?:|I )run the command "([^"]*)"$/
 	 */
 	public function iRunTheCommand($command) {
 		$this->lastCommandOutput = NULL;
@@ -103,7 +103,7 @@ class FlowContext extends BehatContext {
 	}
 
 	/**
-	 * @Then /^I should see the command output "([^"]*)"$/
+	 * @Then /^(?:|I )should see the command output "([^"]*)"$/
 	 */
 	public function iShouldSeeTheCommandOutput($line) {
 		\PHPUnit_Framework_Assert::assertContains($line, explode(PHP_EOL, $this->lastCommandOutput));
@@ -114,6 +114,13 @@ class FlowContext extends BehatContext {
 	 */
 	public function printLastCommandOutput() {
 		$this->printDebug($this->lastCommandOutput);
+	}
+
+	/**
+	 * @Then /^(?:|I )should see "([^"]*)" in the command output$/
+	 */
+	public function iShouldSeeSomethingInTheCommandOutput($contents) {
+		\PHPUnit_Framework_Assert::assertContains($contents, $this->lastCommandOutput);
 	}
 
 	/**
