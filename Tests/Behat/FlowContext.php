@@ -110,6 +110,13 @@ class FlowContext extends BehatContext {
 	}
 
 	/**
+	 * @Then /^(P|p)rint last command output$/
+	 */
+	public function printLastCommandOutput() {
+		$this->printDebug($this->lastCommandOutput);
+	}
+
+	/**
 	 * @BeforeScenario @fixtures
 	 */
 	public function resetTestFixtures($event) {
