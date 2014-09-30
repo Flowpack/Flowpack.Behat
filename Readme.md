@@ -5,8 +5,7 @@ This package provides 2 commands to ease the setup of Behat in your Flow project
 
 **behat:setup**
 
-This command will add Behat to the "Build/Behat" folder, install a binary to
-"bin/behat" and download a current version of the selenium server to "bin/selenium-server.jar"
+This command will download a current version of the selenium server to "bin/selenium-server.jar"
 
 ```
 ./flow behat:kickstart

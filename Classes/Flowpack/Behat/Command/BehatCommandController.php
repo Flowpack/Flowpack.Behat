@@ -37,18 +37,6 @@ class BehatCommandController extends \TYPO3\Flow\Cli\CommandController {
 	 * @return void
 	 */
 	public function setupCommand() {
-		$behatBuildPath = FLOW_PATH_ROOT . 'Build/Behat/';
-		if (!is_dir($behatBuildPath)) {
-			Files::copyDirectoryRecursively('resource://Flowpack.Behat/Private/Build/Behat', $behatBuildPath);
-		}
-
-		$behatBinaryPath = FLOW_PATH_ROOT . 'bin/behat';
-		if (!is_file($behatBinaryPath)) {
-			system('cd ' . $behatBuildPath . ' && composer install');
-			$this->outputLine();
-			$this->outputLine('Installed Behat to bin/behat');
-		}
-
 		$seleniumBinaryPath = FLOW_PATH_ROOT . 'bin/selenium-server.jar';
 		if (!is_file($seleniumBinaryPath)) {
 			$seleniumVersion = 'selenium-server-standalone-2.39.0.jar';
