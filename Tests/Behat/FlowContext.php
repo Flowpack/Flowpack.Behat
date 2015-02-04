@@ -89,7 +89,8 @@ class FlowContext extends BehatContext {
 	 * @When /^(?:|I )run the command "([^"]*)"$/
 	 */
 	public function iRunTheCommand($command) {
-		$this->lastCommandOutput = NULL;
+		$captureAspect = $this->objectManager->get('Flowpack\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect');
+		$captureAspect->reset();
 
 		$request = $this->objectManager->get('TYPO3\Flow\Cli\RequestBuilder')->build($command);
 		$response = new \TYPO3\Flow\Cli\Response();
@@ -97,7 +98,7 @@ class FlowContext extends BehatContext {
 		$dispatcher = $this->objectManager->get('TYPO3\Flow\Mvc\Dispatcher');
 		$dispatcher->dispatch($request, $response);
 
-		$this->lastCommandOutput = $response->getContent();
+		$this->lastCommandOutput = $captureAspect->getCapturedOutput();
 
 		$this->persistAll();
 	}
