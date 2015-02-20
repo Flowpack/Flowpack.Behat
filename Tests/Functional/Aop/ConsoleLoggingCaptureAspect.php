@@ -30,7 +30,7 @@ class ConsoleLoggingCaptureAspect {
 	/**
 	 * @var boolean
 	 */
-	protected $sendConsoleOutput = FALSE;
+	protected $sendConsoleOutput = TRUE;
 
 	/**
 	 * @Flow\Around("method(TYPO3\Flow\Cli\ConsoleOutput->output())")

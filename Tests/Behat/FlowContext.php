@@ -12,6 +12,7 @@ namespace Flowpack\Behat\Tests\Behat;
  *                                                                        */
 
 use Behat\Behat\Context\BehatContext;
+use Flowpack\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
 use TYPO3\Flow\Core\Booting\Scripts;
 use TYPO3\Flow\Core\Bootstrap;
 use TYPO3\Flow\Configuration\ConfigurationManager;
@@ -42,6 +43,12 @@ class FlowContext extends BehatContext {
 	 * @var string
 	 */
 	protected $lastCommandOutput;
+
+	/**
+	 * @var ConsoleLoggingCaptureAspect
+	 * @Flow\Inject
+	 */
+	protected $consoleLoggingCaptureAspect;
 
 	/**
 	 * @param array $parameters
@@ -89,6 +96,8 @@ class FlowContext extends BehatContext {
 	 * @When /^(?:|I )run the command "([^"]*)"$/
 	 */
 	public function iRunTheCommand($command) {
+		$this->consoleLoggingCaptureAspect->disableOutput();
+
 		$captureAspect = $this->objectManager->get('Flowpack\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect');
 		$captureAspect->reset();
 
@@ -101,6 +110,8 @@ class FlowContext extends BehatContext {
 		$this->lastCommandOutput = $captureAspect->getCapturedOutput();
 
 		$this->persistAll();
+
+		$this->consoleLoggingCaptureAspect->enableOutput();
 	}
 
 	/**
