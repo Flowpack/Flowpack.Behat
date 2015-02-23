@@ -28,6 +28,11 @@ class ConsoleLoggingCaptureAspect {
 	protected $capturedOutput = '';
 
 	/**
+	 * @var boolean
+	 */
+	protected $sendConsoleOutput = TRUE;
+
+	/**
 	 * @Flow\Around("method(TYPO3\Flow\Cli\ConsoleOutput->output())")
 	 * @param JoinPointInterface $joinPoint
 	 */
@@ -39,6 +44,24 @@ class ConsoleLoggingCaptureAspect {
 		}
 
 		$this->capturedOutput .= $text;
+
+		if ($this->sendConsoleOutput === TRUE) {
+			return $joinPoint->getAdviceChain()->proceed($joinPoint);
+		}
+	}
+
+	/**
+	 * Enable console output
+	 */
+	public function enableOutput() {
+		$this->sendConsoleOutput = TRUE;
+	}
+
+	/**
+	 * Disable console output
+	 */
+	public function disableOutput() {
+		$this->sendConsoleOutput = FALSE;
 	}
 
 	/**
