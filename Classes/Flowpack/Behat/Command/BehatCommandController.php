@@ -44,7 +44,7 @@ class BehatCommandController extends \TYPO3\Flow\Cli\CommandController {
 
 		$behatBinaryPath = FLOW_PATH_ROOT . 'bin/behat';
 		if (!is_file($behatBinaryPath)) {
-			system('cd ' . $behatBuildPath . ' && composer install');
+			system('cd "' . $behatBuildPath . '" && composer install');
 			$this->outputLine();
 			$this->outputLine('Installed Behat to bin/behat');
 		}
