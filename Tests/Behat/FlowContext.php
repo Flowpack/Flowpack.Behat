@@ -12,7 +12,6 @@ namespace Flowpack\Behat\Tests\Behat;
  *                                                                        */
 
 use Behat\Behat\Context\BehatContext;
-use Flowpack\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
 use TYPO3\Flow\Core\Booting\Scripts;
 use TYPO3\Flow\Core\Bootstrap;
 use TYPO3\Flow\Configuration\ConfigurationManager;
@@ -43,12 +42,6 @@ class FlowContext extends BehatContext {
 	 * @var string
 	 */
 	protected $lastCommandOutput;
-
-	/**
-	 * @var ConsoleLoggingCaptureAspect
-	 * @Flow\Inject
-	 */
-	protected $consoleLoggingCaptureAspect;
 
 	/**
 	 * @param array $parameters
@@ -96,22 +89,26 @@ class FlowContext extends BehatContext {
 	 * @When /^(?:|I )run the command "([^"]*)"$/
 	 */
 	public function iRunTheCommand($command) {
-		$this->consoleLoggingCaptureAspect->disableOutput();
-
 		$captureAspect = $this->objectManager->get('Flowpack\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect');
 		$captureAspect->reset();
 
-		$request = $this->objectManager->get('TYPO3\Flow\Cli\RequestBuilder')->build($command);
-		$response = new \TYPO3\Flow\Cli\Response();
+		$captureAspect->disableOutput();
 
-		$dispatcher = $this->objectManager->get('TYPO3\Flow\Mvc\Dispatcher');
-		$dispatcher->dispatch($request, $response);
+		try {
+			$request = $this->objectManager->get('TYPO3\Flow\Cli\RequestBuilder')->build($command);
+			$response = new \TYPO3\Flow\Cli\Response();
 
-		$this->lastCommandOutput = $captureAspect->getCapturedOutput();
+			$dispatcher = $this->objectManager->get('TYPO3\Flow\Mvc\Dispatcher');
+			$dispatcher->dispatch($request, $response);
 
-		$this->persistAll();
+			$this->lastCommandOutput = $captureAspect->getCapturedOutput();
 
-		$this->consoleLoggingCaptureAspect->enableOutput();
+			$this->persistAll();
+
+			$captureAspect->enableOutput();
+		} catch(\Exception $e) {
+			$captureAspect->enableOutput();
+		}
 	}
 
 	/**
