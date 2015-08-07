@@ -64,15 +64,15 @@ class BehatCommandController extends \TYPO3\Flow\Cli\CommandController {
 	 *
 	 * It will add a folder Tests/Behavior in your package with a default Behat setup.
 	 *
-	 * @param string $packageName The package key
+	 * @param string $packageKey The package key
 	 * @param string $host The base URL for the Flow application (e.g. http://example.local/)
 	 * @return void
 	 */
-	public function kickstartCommand($packageName, $host) {
+	public function kickstartCommand($packageKey, $host) {
 		$this->setupCommand();
 
-		if ($this->packageManager->isPackageAvailable($packageName)) {
-			$package = $this->packageManager->getPackage($packageName);
+		if ($this->packageManager->isPackageAvailable($packageKey)) {
+			$package = $this->packageManager->getPackage($packageKey);
 
 			$behaviorTestsPath = $package->getPackagePath() . 'Tests/Behavior';
 			if (!is_dir($behaviorTestsPath)) {
@@ -83,7 +83,7 @@ class BehatCommandController extends \TYPO3\Flow\Cli\CommandController {
 			$behatConfiguration = str_replace('base_url: http://localhost/', 'base_url: ' . $host, $behatConfiguration);
 			file_put_contents($behaviorTestsPath . '/behat.yml', $behatConfiguration);
 		}
-		$this->outputLine('Behat is installed and can be used by running: "bin/behat -c Packages/Application/%s/Tests/Behavior/behat.yml"', array($packageName));
+		$this->outputLine('Behat is installed and can be used by running: "bin/behat -c Packages/Application/%s/Tests/Behavior/behat.yml"', array($packageKey));
 	}
 
 }
