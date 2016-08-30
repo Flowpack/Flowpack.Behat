@@ -303,7 +303,7 @@ class FlowContext extends BehatContext {
 						$routeValues = array_merge($routeValues, $arguments);
 					}
 					if ($route->resolves($routeValues)) {
-						$uri = $route->getMatchingUri();
+						$uri = $route->getResolvedUriPath();
 						break;
 					}
 				}
