@@ -52,12 +52,16 @@ For installing all composer packages this command depends on having "composer" i
 If you don't meet that requirement you should manually run a "composer install" in the "Build/Behat" folder.
 
 ```
-./flow behat:kickstart --package-name <My.Package> --host <http://my.host/>
+./flow behat:setup
 ```
 
 **behat:kickstart**
 
 This command will add a Tests/Behavior folder with basic Behat tests to the specified package
+
+```
+./flow behat:kickstart --package-name <My.Package> --host <http://my.host/>
+```
 
 ```
 ./flow behat:kickstart My.Package http://my.host/
