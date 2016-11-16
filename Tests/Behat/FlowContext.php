@@ -12,9 +12,25 @@ namespace Flowpack\Behat\Tests\Behat;
  *                                                                        */
 
 use Behat\Behat\Context\BehatContext;
+use Behat\Behat\Exception\ErrorException;
+use Doctrine\Common\Persistence\ObjectManager as DoctrineObjectManager;
+use Doctrine\DBAL\DBALException;
+use Doctrine\ORM\EntityManager;
+use Flowpack\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
+use Flowpack\Behat\Tests\Functional\Fixture\FixtureFactory;
+use TYPO3\Flow\Cli\RequestBuilder;
+use TYPO3\Flow\Cli\Response;
 use TYPO3\Flow\Core\Booting\Scripts;
 use TYPO3\Flow\Core\Bootstrap;
 use TYPO3\Flow\Configuration\ConfigurationManager;
+use TYPO3\Flow\Mvc\Dispatcher;
+use TYPO3\Flow\Mvc\Routing\Router;
+use TYPO3\Flow\Object\ObjectManagerInterface;
+use TYPO3\Flow\Persistence\Doctrine\Service;
+use TYPO3\Flow\Persistence\PersistenceManagerInterface;
+use TYPO3\Flow\Reflection\ReflectionService;
+use TYPO3\Flow\Security\Policy\PolicyService;
+use TYPO3\Flow\Security\Policy\RoleRepository;
 
 class FlowContext extends BehatContext {
 
@@ -24,12 +40,12 @@ class FlowContext extends BehatContext {
 	static protected $bootstrap;
 
 	/**
-	 * @var \TYPO3\Flow\Mvc\Routing\Router
+	 * @var Router
 	 */
 	protected $router;
 
 	/**
-	 * @var \TYPO3\Flow\Object\ObjectManagerInterface
+	 * @var ObjectManagerInterface
 	 */
 	protected $objectManager;
 
@@ -65,7 +81,7 @@ class FlowContext extends BehatContext {
 		if (!defined('BEHAT_ERROR_REPORTING')) {
 			define('BEHAT_ERROR_REPORTING', E_ALL);
 				// Load ErrorException class, since it will be used in the Behat error handler
-			class_exists('Behat\Behat\Exception\ErrorException');
+			class_exists(ErrorException::class);
 		}
 		$bootstrap = new Bootstrap('Testing/Behat');
 		Scripts::initializeClassLoader($bootstrap);
@@ -89,16 +105,16 @@ class FlowContext extends BehatContext {
 	 * @When /^(?:|I )run the command "([^"]*)"$/
 	 */
 	public function iRunTheCommand($command) {
-		$captureAspect = $this->objectManager->get('Flowpack\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect');
+		$captureAspect = $this->objectManager->get(ConsoleLoggingCaptureAspect::class);
 		$captureAspect->reset();
 
 		$captureAspect->disableOutput();
 
 		try {
-			$request = $this->objectManager->get('TYPO3\Flow\Cli\RequestBuilder')->build($command);
-			$response = new \TYPO3\Flow\Cli\Response();
+			$request = $this->objectManager->get(RequestBuilder::class)->build($command);
+			$response = new Response();
 
-			$dispatcher = $this->objectManager->get('TYPO3\Flow\Mvc\Dispatcher');
+			$dispatcher = $this->objectManager->get(Dispatcher::class);
 			$dispatcher->dispatch($request, $response);
 
 			$this->lastCommandOutput = $captureAspect->getCapturedOutput();
@@ -136,24 +152,24 @@ class FlowContext extends BehatContext {
 	 * @BeforeScenario @fixtures
 	 */
 	public function resetTestFixtures($event) {
-		/** @var \Doctrine\ORM\EntityManager $entityManager */
-		$entityManager = $this->objectManager->get('Doctrine\Common\Persistence\ObjectManager');
+		/** @var EntityManager $entityManager */
+		$entityManager = $this->objectManager->get(DoctrineObjectManager::class);
 		$entityManager->clear();
 
 		if (self::$databaseSchema !== NULL) {
 			$this->truncateTables($entityManager);
 		} else {
 			try {
-				/** @var \TYPO3\Flow\Persistence\Doctrine\Service $doctrineService */
-				$doctrineService = $this->objectManager->get('TYPO3\Flow\Persistence\Doctrine\Service');
+				/** @var Service $doctrineService */
+				$doctrineService = $this->objectManager->get(Service::class);
 				$doctrineService->executeMigrations();
 				$needsTruncate = TRUE;
-			} catch (\Doctrine\DBAL\DBALException $exception) {
+			} catch (DBALException $exception) {
 				// Do an initial teardown to drop the schema cleanly
-				$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->tearDown();
+				$this->objectManager->get(PersistenceManagerInterface::class)->tearDown();
 
-				/** @var \TYPO3\Flow\Persistence\Doctrine\Service $doctrineService */
-				$doctrineService = $this->objectManager->get('TYPO3\Flow\Persistence\Doctrine\Service');
+				/** @var Service $doctrineService */
+				$doctrineService = $this->objectManager->get(Service::class);
 				$doctrineService->executeMigrations();
 				$needsTruncate = FALSE;
 			}
@@ -176,7 +192,7 @@ class FlowContext extends BehatContext {
 	/**
 	 * Truncate all known tables
 	 *
-	 * @param \Doctrine\ORM\EntityManager $entityManager
+	 * @param EntityManager $entityManager
 	 * @return void
 	 */
 	public function truncateTables($entityManager) {
@@ -212,9 +228,9 @@ class FlowContext extends BehatContext {
 	 * @return void
 	 */
 	protected function resetFactories() {
-		/** @var $reflectionService \TYPO3\Flow\Reflection\ReflectionService */
-		$reflectionService = $this->objectManager->get('TYPO3\Flow\Reflection\ReflectionService');
-		$fixtureFactoryClassNames = $reflectionService->getAllSubClassNamesForClass('Flowpack\Behat\Tests\Functional\Fixture\FixtureFactory');
+		/** @var $reflectionService ReflectionService */
+		$reflectionService = $this->objectManager->get(ReflectionService::class);
+		$fixtureFactoryClassNames = $reflectionService->getAllSubClassNamesForClass(FixtureFactory::class);
 		foreach ($fixtureFactoryClassNames as $fixtureFactoyClassName) {
 			if (!$reflectionService->isClassAbstract($fixtureFactoyClassName)) {
 				$factory = $this->objectManager->get($fixtureFactoyClassName);
@@ -233,10 +249,10 @@ class FlowContext extends BehatContext {
 	 * @return void
 	 */
 	protected function resetRolesAndPolicyService() {
-		$this->objectManager->get('TYPO3\Flow\Security\Policy\PolicyService')->reset();
+		$this->objectManager->get(PolicyService::class)->reset();
 
-		if ($this->objectManager->isRegistered('TYPO3\Flow\Security\Policy\RoleRepository')) {
-			$roleRepository = $this->objectManager->get('TYPO3\Flow\Security\Policy\RoleRepository');
+		if ($this->objectManager->isRegistered(RoleRepository::class)) {
+			$roleRepository = $this->objectManager->get(RoleRepository::class);
 			\TYPO3\Flow\Reflection\ObjectAccess::setProperty($roleRepository, 'newRoles', array(), TRUE);
 		}
 	}
@@ -245,20 +261,20 @@ class FlowContext extends BehatContext {
 	 * Persist any changes
 	 */
 	public function persistAll() {
-		$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->persistAll();
-		$this->objectManager->get('TYPO3\Flow\Persistence\PersistenceManagerInterface')->clearState();
+		$this->objectManager->get(PersistenceManagerInterface::class)->persistAll();
+		$this->objectManager->get(PersistenceManagerInterface::class)->clearState();
 
 		$this->resetFactories();
 	}
 
 	/**
-	 * @return \TYPO3\Flow\Mvc\Routing\Router
+	 * @return Router
 	 */
 	protected function getRouter() {
 		if ($this->router === NULL) {
-			$this->router = $this->objectManager->get('\TYPO3\Flow\Mvc\Routing\Router');
+			$this->router = $this->objectManager->get(Router::class);
 
-			$configurationManager = $this->objectManager->get('TYPO3\Flow\Configuration\ConfigurationManager');
+			$configurationManager = $this->objectManager->get(ConfigurationManager::class);
 			$routesConfiguration = $configurationManager->getConfiguration(ConfigurationManager::CONFIGURATION_TYPE_ROUTES);
 			$this->router->setRoutesConfiguration($routesConfiguration);
 		}
@@ -319,7 +335,7 @@ class FlowContext extends BehatContext {
 	}
 
 	/**
-	 * @return \TYPO3\Flow\Object\ObjectManagerInterface
+	 * @return ObjectManagerInterface
 	 */
 	public function getObjectManager() {
 		return $this->objectManager;
