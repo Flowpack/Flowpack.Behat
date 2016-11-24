@@ -210,6 +210,12 @@ class FlowContext extends BehatContext {
 				$sql .= 'SET FOREIGN_KEY_CHECKS=1;';
 				$connection->executeQuery($sql);
 				break;
+			case 'sqlite':
+				foreach ($tables as $table) {
+					$sql = 'DELETE FROM `' . $table->getName() . '`;';
+					$connection->executeQuery($sql);
+				}
+				break;
 			case 'postgresql':
 			default:
 				foreach ($tables as $table) {
