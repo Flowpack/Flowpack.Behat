@@ -1,14 +1,14 @@
 {
-    "name": "flowpack/behat",
-    "type": "typo3-flow-package",
-    "description": "Behat support package for TYPO3 Flow",
+    "name": "neos/behat",
+    "type": "neos-package",
+    "description": "Behat support package for Neos Flow",
     "license": "LGPL-3.0+",
     "require": {
-        "typo3/flow": ">=2.3"
+        "neos/flow": "*"
     },
     "autoload": {
-        "psr-0": {
-            "Flowpack\\Behat": "Classes"
+        "psr-4": {
+            "Neos\\Behat\\": "Classes"
         }
     },
     "extra": {
