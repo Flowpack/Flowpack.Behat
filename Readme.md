@@ -14,7 +14,7 @@ since all the data will be removed after each scenario.
 
 `FLOW_ROOT/Configuration/Development/Behat/Settings.yaml`::
 
-	TYPO3:
+	Neos:
 	  Flow:
 	    persistence:
 	      backendOptions:
@@ -22,7 +22,7 @@ since all the data will be removed after each scenario.
 
 `FLOW_ROOT/Configuration/Testing/Behat/Settings.yaml`::
 
-	TYPO3:
+	Neos:
 	  Flow:
 	    persistence:
 	      backendOptions:
@@ -86,7 +86,7 @@ configuration he can make a local copy as `behat.yml`, change it at will and use
 To run the tests, Behat needs a base URI pointing to the special virtual host running with the `Development/Behat`
 context. To set a custom base URI the default file should be copied and customized
 
-	cd Packages/Application/TYPO3.Neos/Tests/Behavior
+	cd Packages/Application/Neos.Neos/Tests/Behavior
 	cp behat.yml.dist behat.yml
 	# Edit file behat.yml
 
