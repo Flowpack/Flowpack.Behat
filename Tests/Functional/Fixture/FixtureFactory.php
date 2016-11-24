@@ -1,5 +1,5 @@
 <?php
-namespace Flowpack\Behat\Tests\Functional\Fixture;
+namespace Neos\Behat\Tests\Functional\Fixture;
 
 /*
  * This file is part of the Neos.Behat package.

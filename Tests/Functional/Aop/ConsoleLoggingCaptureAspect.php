@@ -1,5 +1,5 @@
 <?php
-namespace Flowpack\Behat\Tests\Functional\Aop;
+namespace Neos\Behat\Tests\Functional\Aop;
 
 /*
  * This file is part of the Neos.Behat package.

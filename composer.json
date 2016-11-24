@@ -1,5 +1,5 @@
 {
-    "name": "flowpack/behat",
+    "name": "neos/behat",
     "type": "neos-package",
     "description": "Behat support package for Neos Flow",
     "license": "LGPL-3.0+",
@@ -8,7 +8,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Flowpack\\Behat\\": "Classes"
+            "Neos\\Behat\\": "Classes"
         }
     },
     "extra": {

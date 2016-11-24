@@ -1,5 +1,5 @@
 <?php
-namespace Flowpack\Behat\Command;
+namespace Neos\Behat\Command;
 
 /*
  * This file is part of the Neos.Behat package.
@@ -42,7 +42,7 @@ class BehatCommandController extends CommandController
     {
         $behatBuildPath = FLOW_PATH_ROOT . 'Build/Behat/';
         if (!is_dir($behatBuildPath)) {
-            Files::copyDirectoryRecursively('resource://Flowpack.Behat/Private/Build/Behat', $behatBuildPath);
+            Files::copyDirectoryRecursively('resource://Neos.Behat/Private/Build/Behat', $behatBuildPath);
         }
 
         $behatBinaryPath = FLOW_PATH_ROOT . 'bin/behat';
@@ -86,7 +86,7 @@ class BehatCommandController extends CommandController
 
             $behaviorTestsPath = $package->getPackagePath() . 'Tests/Behavior';
             if (!is_dir($behaviorTestsPath)) {
-                Files::copyDirectoryRecursively('resource://Flowpack.Behat/Private/Tests/Behavior', $behaviorTestsPath);
+                Files::copyDirectoryRecursively('resource://Neos.Behat/Private/Tests/Behavior', $behaviorTestsPath);
             }
 
             $behatConfiguration = file_get_contents($behaviorTestsPath . '/behat.yml.dist');

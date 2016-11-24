@@ -1,5 +1,5 @@
 <?php
-namespace Flowpack\Behat\Tests\Behat;
+namespace Neos\Behat\Tests\Behat;
 
 /*
  * This file is part of the Neos.Behat package.
@@ -16,8 +16,8 @@ use Behat\Behat\Exception\ErrorException;
 use Doctrine\Common\Persistence\ObjectManager as DoctrineObjectManager;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManager;
-use Flowpack\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
-use Flowpack\Behat\Tests\Functional\Fixture\FixtureFactory;
+use Neos\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
+use Neos\Behat\Tests\Functional\Fixture\FixtureFactory;
 use Neos\Flow\Cli\RequestBuilder;
 use Neos\Flow\Cli\Response;
 use Neos\Flow\Core\Booting\Scripts;

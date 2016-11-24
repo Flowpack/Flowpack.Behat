@@ -6,7 +6,7 @@ use Behat\Gherkin\Node\TableNode,
 use Neos\Flow\Utility\Arrays;
 use PHPUnit_Framework_Assert as Assert;
 
-require_once(__DIR__ . '/../../../../../Flowpack.Behat/Tests/Behat/FlowContext.php');
+require_once(__DIR__ . '/../../../../../Neos.Behat/Tests/Behat/FlowContext.php');
 
 /**
  * Features context
