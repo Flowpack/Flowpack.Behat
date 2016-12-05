@@ -89,6 +89,8 @@ class FlowContext extends BehatContext {
 		Scripts::initializePackageManagement($bootstrap);
 		$bootstrap->buildRuntimeSequence()->invoke($bootstrap);
 
+		exec('FLOW_CONTEXT=Development/Behat ./flow flow:cache:warmup');
+
 		return $bootstrap;
 	}
 
