@@ -1,17 +1,11 @@
 <?php
 namespace Flowpack\Behat\Tests\Functional\Fixture;
 
-/*                                                                        *
- * This script belongs to the TYPO3 Flow package "Flowpack.Behat".        *
- *                                                                        *
- * It is free software; you can redistribute it and/or modify it under    *
- * the terms of the GNU Lesser General Public License, either version 3   *
- * of the License, or (at your option) any later version.                 *
- *                                                                        *
- * The TYPO3 project - inspiring people to share!                         *
- *                                                                        */
+/*                                                                   *
+ * This script belongs to the Flow package "Flowpack.Behat".         *
+ *                                                                   */
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 
 /**
  * Base test fixture factory
@@ -32,7 +26,7 @@ abstract class FixtureFactory {
 
 	/**
 	 * @Flow\Inject
-	 * @var \TYPO3\Flow\Persistence\PersistenceManagerInterface
+	 * @var \Neos\Flow\Persistence\PersistenceManagerInterface
 	 */
 	protected $persistenceManager;
 
@@ -47,14 +41,14 @@ abstract class FixtureFactory {
 		if (!isset($this->fixtureDefinitions[$objectName])) {
 			throw new \Exception('Object name ' . $objectName . ' not configured in fixture definitions');
 		}
-		$properties = \TYPO3\Flow\Utility\Arrays::arrayMergeRecursiveOverrule($this->fixtureDefinitions[$objectName], $overrideProperties);
+		$properties = \Neos\Utility\Arrays::arrayMergeRecursiveOverrule($this->fixtureDefinitions[$objectName], $overrideProperties);
 		$className = isset($properties['__type']) ? $properties['__type'] : $this->baseType;
 		unset($properties['__type']);
 
 		$object = new $className();
 		foreach ($properties as $propertyName => $propertyValue) {
-			if (\TYPO3\Flow\Reflection\ObjectAccess::isPropertySettable($object, $propertyName)) {
-				\TYPO3\Flow\Reflection\ObjectAccess::setProperty($object, $propertyName, $propertyValue);
+			if (\Neos\Utility\ObjectAccess::isPropertySettable($object, $propertyName)) {
+				\Neos\Utility\ObjectAccess::setProperty($object, $propertyName, $propertyValue);
 			}
 		}
 

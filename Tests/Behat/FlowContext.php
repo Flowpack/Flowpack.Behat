@@ -1,15 +1,9 @@
 <?php
 namespace Flowpack\Behat\Tests\Behat;
 
-/*                                                                        *
- * This script belongs to the TYPO3 Flow package "Flowpack.Behat".        *
- *                                                                        *
- * It is free software; you can redistribute it and/or modify it under    *
- * the terms of the GNU Lesser General Public License, either version 3   *
- * of the License, or (at your option) any later version.                 *
- *                                                                        *
- * The TYPO3 project - inspiring people to share!                         *
- *                                                                        */
+/*                                                                   *
+ * This script belongs to the Flow package "Flowpack.Behat".         *
+ *                                                                   */
 
 use Behat\Behat\Context\BehatContext;
 use Behat\Behat\Exception\ErrorException;
@@ -18,19 +12,19 @@ use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManager;
 use Flowpack\Behat\Tests\Functional\Aop\ConsoleLoggingCaptureAspect;
 use Flowpack\Behat\Tests\Functional\Fixture\FixtureFactory;
-use TYPO3\Flow\Cli\RequestBuilder;
-use TYPO3\Flow\Cli\Response;
-use TYPO3\Flow\Core\Booting\Scripts;
-use TYPO3\Flow\Core\Bootstrap;
-use TYPO3\Flow\Configuration\ConfigurationManager;
-use TYPO3\Flow\Mvc\Dispatcher;
-use TYPO3\Flow\Mvc\Routing\Router;
-use TYPO3\Flow\Object\ObjectManagerInterface;
-use TYPO3\Flow\Persistence\Doctrine\Service;
-use TYPO3\Flow\Persistence\PersistenceManagerInterface;
-use TYPO3\Flow\Reflection\ReflectionService;
-use TYPO3\Flow\Security\Policy\PolicyService;
-use TYPO3\Flow\Security\Policy\RoleRepository;
+use Neos\Flow\Cli\RequestBuilder;
+use Neos\Flow\Cli\Response;
+use Neos\Flow\Core\Booting\Scripts;
+use Neos\Flow\Core\Bootstrap;
+use Neos\Flow\Configuration\ConfigurationManager;
+use Neos\Flow\Mvc\Dispatcher;
+use Neos\Flow\Mvc\Routing\Router;
+use Neos\Flow\ObjectManagement\ObjectManagerInterface;
+use Neos\Flow\Persistence\Doctrine\Service;
+use Neos\Flow\Persistence\PersistenceManagerInterface;
+use Neos\Flow\Reflection\ReflectionService;
+use Neos\Flow\Security\Policy\PolicyService;
+use Neos\Flow\Security\Policy\RoleRepository;
 
 class FlowContext extends BehatContext {
 
@@ -73,7 +67,7 @@ class FlowContext extends BehatContext {
 	 * Create a flow bootstrap instance
 	 */
 	protected function initializeFlow() {
-		require_once(__DIR__ . '/../../../../Framework/TYPO3.Flow/Classes/TYPO3/Flow/Core/Bootstrap.php');
+		require_once(__DIR__ . '/../../../../Framework/Neos.Flow/Classes/Core/Bootstrap.php');
 		if (!defined('FLOW_PATH_ROOT')) {
 			define('FLOW_PATH_ROOT', realpath(__DIR__ . '/../../../../..') . '/');
 		}
@@ -253,7 +247,7 @@ class FlowContext extends BehatContext {
 
 		if ($this->objectManager->isRegistered(RoleRepository::class)) {
 			$roleRepository = $this->objectManager->get(RoleRepository::class);
-			\TYPO3\Flow\Reflection\ObjectAccess::setProperty($roleRepository, 'newRoles', array(), TRUE);
+			\Neos\Utility\ObjectAccess::setProperty($roleRepository, 'newRoles', array(), TRUE);
 		}
 	}
 
@@ -311,7 +305,7 @@ class FlowContext extends BehatContext {
 		} else {
 			$router = $this->getRouter();
 
-			/** @var \TYPO3\Flow\Mvc\Routing\Route $route */
+			/** @var \Neos\Flow\Mvc\Routing\Route $route */
 			foreach ($router->getRoutes() as $route) {
 				if (preg_match('/::\s*' . preg_quote($pageName, '/') . '$/', $route->getName())) {
 					$routeValues = $route->getDefaults();

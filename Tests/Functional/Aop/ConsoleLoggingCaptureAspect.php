@@ -1,18 +1,12 @@
 <?php
 namespace Flowpack\Behat\Tests\Functional\Aop;
 
-/*                                                                        *
- * This script belongs to the TYPO3 Flow package "Flowpack.Behat".        *
- *                                                                        *
- * It is free software; you can redistribute it and/or modify it under    *
- * the terms of the GNU Lesser General Public License, either version 3   *
- * of the License, or (at your option) any later version.                 *
- *                                                                        *
- * The TYPO3 project - inspiring people to share!                         *
- *                                                                        */
+/*                                                                   *
+ * This script belongs to the Flow package "Flowpack.Behat".         *
+ *                                                                   */
 
-use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Aop\JoinPointInterface;
+use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Aop\JoinPointInterface;
 
 /**
  * Capture output from command controllers for Behat tests
@@ -33,7 +27,7 @@ class ConsoleLoggingCaptureAspect {
 	protected $sendConsoleOutput = TRUE;
 
 	/**
-	 * @Flow\Around("method(TYPO3\Flow\Cli\ConsoleOutput->output())")
+	 * @Flow\Around("method(Neos\Flow\Cli\ConsoleOutput->output())")
 	 * @param JoinPointInterface $joinPoint
 	 */
 	public function captureOutput(JoinPointInterface $joinPoint) {
